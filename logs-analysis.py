@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import psycopg2
 
 # 1. What are the most popular three articles of all time?
@@ -38,7 +39,8 @@ GROUP BY time::date
 ORDER BY time::date
 ),
 percentError AS(
-SELECT logTotal.LogDay, round(cast((100*errTotal.requests) as numeric) / cast(logTotal.requests as numeric),2)
+SELECT logTotal.LogDay, round(cast((100*errTotal.requests) as numeric) /
+cast(logTotal.requests as numeric),2)
 AS percent
 FROM logTotal, errTotal
 WHERE errTotal.ErrDay = logTotal.LogDay
@@ -46,24 +48,32 @@ WHERE errTotal.ErrDay = logTotal.LogDay
 SELECT * FROM percentError WHERE percent > 1.0;
 """
 
-#Execute the query and return the results of the query
+# Execute the query and return the results of the query
+
+
 def execute_query_get_results(request):
-    conn = psycopg2.connect("news")
-    cursor = conn.cursor()
-    cursor.execute(request)
-    results = c.fetchall()
-    conn.close()
-    return results
+    try:
+        conn = psycopg2.connect("news")
+        cursor = conn.cursor()
+        cursor.execute(request)
+        results = c.fetchall()
+        conn.close()
+        return results
+    except psycopg2.Error as e:
+        print ("Unable to connect to the database")
+
 
 results_articles = execute_query_get_results(top_articles)
 results_authors = execute_query_get_results(popular_authors)
 results_errors = execute_query_get_results(percent_errors)
 
-#Print results of queries
+# Print results of queries
+
 
 def print_results(query):
     for i in range(len(query)):
         print ('\t' + str(query[i][0]) + ' | ' + str(query[i][1]))
+
 
 print ("What are the most popular three articles of all time?")
 print_results(results_articles)
